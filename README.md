@@ -1,29 +1,11 @@
-# README #
+Sensix PowerMap Backend
+===
 
-This README would normally document whatever steps are necessary to get your application up and running.
+### Intro 
 
-### What is this repository for? ###
+This is the PowerMap backend to anonymize and aggregate power quality metrics.
 
-* Quick summary
-* Version
-* [Learn Markdown](https://bitbucket.org/tutorials/markdowndemo)
+Our mission is to automate electric energy audits with our analytics platform so that our clients can better maintain their electric grid and reduce energy costs by 30%.
+All this while using energy responsibly and reducing climate change impact.
 
-### How do I get set up? ###
-
-* Summary of set up
-* Configuration
-* Dependencies
-* Database configuration
-* How to run tests
-* Deployment instructions
-
-### Contribution guidelines ###
-
-* Writing tests
-* Code review
-* Other guidelines
-
-### Who do I talk to? ###
-
-* Repo owner or admin
-* Other community or team contact
+By providing affordable and open power quality measurement equipment, we hope to increase adoption also among households - choosing a freemium community account from [Sensix](https://sensix.io/). You benefit from accurate and permanent electric power tracking. In exchange, you contribute to an open, anonymized, and aggregated power quality map so that people can spot electric grid issues and held utilities responsible for keeping an optimal infrastructure for everybody to use.
