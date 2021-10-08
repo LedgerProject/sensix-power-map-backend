@@ -1,0 +1,6 @@
+"""
+Devices Urls.
+"""
+
+urlpatterns = [
+]

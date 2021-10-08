@@ -57,6 +57,7 @@ HELPER_APPS = [
 
 APPS = [
     'apps.core',
+    'apps.devices',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + HELPER_APPS + APPS
