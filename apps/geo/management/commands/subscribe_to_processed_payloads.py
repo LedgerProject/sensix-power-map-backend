@@ -4,7 +4,7 @@ import logging
 from django.conf import settings
 from django.core.management.base import BaseCommand
 
-from apps.devices import tasks
+from apps.geo import tasks
 from common.mqtt import mqtt_service_instance
 
 logger = logging.getLogger(__name__)
@@ -30,13 +30,15 @@ class Command(BaseCommand):
         # Subscribing in on_connect() means that if we lose the connection and
         # reconnect then subscriptions will be renewed.
 
+        topic_pattern = settings.MQTT.get('topics', {}).get('device_data')
+
+        assert topic_pattern is not None, 'Missing device data MQTT topic'
+
         kwargs = {
             'customerToken': '+',
             'deviceEui': '+'
         }
-        topic = settings.MQTT.get('topics', {}).get('device_data')
-
-        assert topic is not None, 'Missing device data MQTT topic'
+        topic = topic_pattern.format(**kwargs)
 
         client.subscribe(topic)
 

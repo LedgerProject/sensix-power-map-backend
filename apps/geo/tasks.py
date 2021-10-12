@@ -1,13 +1,9 @@
-"""
-Devices RQ tasks.
-"""
-
 import logging
 
 from django.conf import settings
 from django_rq import job
 
-from apps.devices.services.ingest_processed_payload import IngestProcessedPayloadService
+from apps.geo.services.ingest_processed_payload import IngestProcessedPayloadService
 
 logger = logging.getLogger(__name__)
 

@@ -1,6 +1,0 @@
-"""
-Devices Urls.
-"""
-
-urlpatterns = [
-]

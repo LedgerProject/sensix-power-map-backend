@@ -50,14 +50,14 @@ HELPER_APPS = [
     'corsheaders',
     'django_select2',
     'cacheback',
+    'django_json_widget',
     'django_rq',
-    'jsoneditor',
     'defender',
 ]
 
 APPS = [
     'apps.core',
-    'apps.devices',
+    'apps.geo',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + HELPER_APPS + APPS
@@ -263,6 +263,7 @@ LOGGING = {
 try:
     from .integrations.sentry import *
     from .integrations.defender import *
+    from .integrations.mqtt import *
     from .integrations.rq import *
 except ImportError as e:
     if cfg.get('SENTRY_IO_ENABLED', False):

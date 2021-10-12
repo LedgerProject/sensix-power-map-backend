@@ -18,7 +18,7 @@ urlpatterns = [
     url(r'^api/v1/auth/jwt/verify/', TokenVerifyView.as_view(), name='jwt_token_verify'),
 
     url(r'^api/v1/', include('apps.core.urls')),
-    url(r'^api/v1/', include('apps.devices.urls')),
+    url(r'^api/v1/', include('apps.geo.urls')),
 
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
 
