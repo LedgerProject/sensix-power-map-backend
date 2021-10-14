@@ -30,6 +30,8 @@ ADMIN_PASSWORD = cfg.get('ADMIN_PASSWORD', 'mock@sensidev!pwd')
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 DEFAULT_EMAIL_ADDRESS = 'say@sensix.io'
 
+DEVICE_METRICS_FILE_PATH = cfg.get('DEVICE_METRICS_FILE_PATH', os.path.join(BASE_DIR, 'device_metrics_conf.json'))
+
 CORS_ORIGIN_WHITELIST = cfg.get('CORS_ORIGIN_WHITELIST', ())
 
 DJANGO_APPS = [
