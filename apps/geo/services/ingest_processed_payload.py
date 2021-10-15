@@ -9,12 +9,14 @@ logger = logging.getLogger(__name__)
 
 
 class IngestProcessedPayloadService(object):
-    def __init__(self, device_eui: str, device_type: str, position: dict, payload: dict, **kwargs) -> None:
-        self.device_eui = device_eui
-        self.device_type = device_type
-        self.latitude = position.get('lat')
-        self.longitude = position.get('lon')
-        self.payload = payload
+    def __init__(self, data: dict, device_metrics: dict, **kwargs) -> None:
+        self.device_eui = data['eui']
+        self.device_type = data['type']
+        self.position = data['position']
+        self.payload = data['payload']
+        self.latitude = self.position.get('lat')
+        self.longitude = self.position.get('lon')
+        self.device_metrics = device_metrics
         self.kwargs = kwargs
 
     def ingest(self):
@@ -25,7 +27,7 @@ class IngestProcessedPayloadService(object):
             return
 
         h = geohash.encode(self.latitude, self.longitude)
-        area = GeohashArea.objects.get_or_create(geohash=h)
+        area, _ = GeohashArea.objects.get_or_create(geohash=h)
 
         area.status = {'todo': h}
         area.data = {'todo': h}
