@@ -32,6 +32,26 @@ DEFAULT_EMAIL_ADDRESS = 'say@sensix.io'
 
 DEVICE_METRICS_FILE_PATH = cfg.get('DEVICE_METRICS_FILE_PATH', os.path.join(BASE_DIR, 'device_metrics_conf.json'))
 
+MOVING_AVERAGE_OPTIONS = {
+    'r3': {
+        'range': 3 * 60 * 60,  # 3 hours
+        'window': 600,  # 10 min
+    },
+    'r8': {
+        'range': 8 * 60 * 60,  # 8 hours
+        'window': 1600,  # ~27 min
+    },
+    'r24': {
+        'range': 24 * 60 * 60,  # 24 hours
+        'window': 4800,  # 80 min
+    },
+    'r48': {
+        'range': 48 * 60 * 60,  # 48 hours
+        'window': 9600,  # 160 min
+    }
+}
+
+
 CORS_ORIGIN_WHITELIST = cfg.get('CORS_ORIGIN_WHITELIST', ())
 
 DJANGO_APPS = [
