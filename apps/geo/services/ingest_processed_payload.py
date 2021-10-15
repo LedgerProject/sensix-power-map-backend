@@ -5,9 +5,9 @@ from collections import defaultdict
 import geohash
 from django.conf import settings
 
-from apps.geo import choices
 from apps.geo.models import GeohashArea
 from apps.geo.services.moving_average import MovingAverageService
+from apps.geo.services.status import StatusService
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +23,7 @@ class IngestProcessedPayloadService(object):
         self.payload = data['payload']
         self.latitude = self.position.get('lat')
         self.longitude = self.position.get('lon')
-        self.device_metrics = device_metrics
+        self.device_metrics_map = device_metrics
         self.kwargs = kwargs
 
     def ingest(self):
@@ -82,28 +82,7 @@ class IngestProcessedPayloadService(object):
         ).update(value, self.payload.get('timestamp'), current_data)
 
     def _compute_status_for(self, value: float, metric_key: str) -> dict:
-        updated_status = {
-            'sid': choices.STATUS_NONE_ID,
-        }
-
-        status_keys_map = {
-            'c': choices.STATUS_CRITICAL_ID,
-            'w': choices.STATUS_WARNING_ID,
-            'n': choices.STATUS_NORMAL_ID,
-        }
-
-        metric = self.device_metrics.get(metric_key)
+        metric = self.device_metrics_map.get(metric_key)
         thresholds = metric.get('thresholds', {})
 
-        for status_key in status_keys_map.keys():
-            for threshold in thresholds.get(status_key, []):
-                x1 = threshold.get('x1')
-                x2 = threshold.get('x2')
-
-                if x1 <= value <= x2:
-                    updated_status['sid'] = status_keys_map.get(status_key)
-                    updated_status['l'] = threshold.get('l')
-
-                    return updated_status
-
-        return updated_status
+        return StatusService(thresholds).update(value)
