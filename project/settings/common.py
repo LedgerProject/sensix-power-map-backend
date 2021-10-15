@@ -32,6 +32,7 @@ DEFAULT_EMAIL_ADDRESS = 'say@sensix.io'
 
 DEVICE_METRICS_FILE_PATH = cfg.get('DEVICE_METRICS_FILE_PATH', os.path.join(BASE_DIR, 'device_metrics_conf.json'))
 
+MOVING_AVERAGE_DEFAULT_KEY = 'r3'
 MOVING_AVERAGE_OPTIONS = {
     'r3': {
         'range': 3 * 60 * 60,  # 3 hours
