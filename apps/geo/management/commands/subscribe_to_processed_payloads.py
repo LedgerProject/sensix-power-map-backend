@@ -5,7 +5,7 @@ from django.conf import settings
 from django.core.management.base import BaseCommand
 
 from apps.geo import tasks
-from apps.geo.services.device_metrics import DeviceMetricsService
+from apps.geo.services.metrics import MetricsService
 from common.mqtt import mqtt_service_instance
 
 logger = logging.getLogger(__name__)
@@ -13,9 +13,10 @@ logger = logging.getLogger(__name__)
 
 class Command(BaseCommand):
     help = 'Subscribe to MQTT topic to receive device processed payloads, to ingest it'
-    DEVICE_METRICS_MAP = DeviceMetricsService().load()
 
     def handle(self, *args, **options):
+        MetricsService().load()
+
         mqtt_service_instance.client.enable_logger(logger)
 
         mqtt_service_instance.client.on_connect = self.on_connect
@@ -48,4 +49,4 @@ class Command(BaseCommand):
     def on_message(client, userdata, msg):
         data = json.loads(msg.payload)
 
-        tasks.ingest_processed_payload.delay(data, Command.DEVICE_METRICS_MAP)
+        tasks.ingest_processed_payload.delay(data)

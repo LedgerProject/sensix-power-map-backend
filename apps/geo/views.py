@@ -10,5 +10,11 @@ class GeohashAreaViewSet(GeohashAreaFields, mixins.RetrieveModelMixin, mixins.Li
     """
     GeohashArea view set.
     """
-    serializer_class = serializers.GeohashAreaSerializer
+    serializer_class = serializers.GeohashAreaDetailSerializer
     queryset = GeohashArea.objects.all()
+
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return serializers.GeohashAreaListSerializer
+        else:
+            return self.serializer_class

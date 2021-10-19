@@ -3,7 +3,9 @@ Common Settings.
 """
 import datetime
 import os
+from itertools import chain
 
+from apps.geo import choices
 from project.settings.config import cfg
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -52,6 +54,24 @@ MOVING_AVERAGE_OPTIONS = {
     }
 }
 
+CATEGORY_METRIC_KEYS_MAP = {
+    choices.CATEGORY_POWER_QUALITY_ID: [
+        'THV',  # Voltage Total Harmonic Distortions
+        'THI',  # Current Total Harmonic Distortions
+        # Voltage harmonic distortions
+        '1V1', '1V2', '1V3', '1V4', '1V5', '1V6', '1V7', '1V8', '1V9', '1V10', '1V11', '1V12', '1V13', '1V14', '1V15',
+        '1V16', '1V17', '1V18', '1V19', '1V20', '1V21', '1V22', '1V23', '1V24', '1V25', '1V26', '1V27', '1V28', '1V29',
+        '1V30', '1V31', '1V32', '1V33', '1V34', '1V35', '1V36', '1V37', '1V38', '1V39', '1V40',
+        # Current harmonic distortions
+        '1I1', '1I2', '1I3', '1I4', '1I5', '1I6', '1I7', '1I8', '1I9', '1I10', '1I11', '1I12', '1I13', '1I14', '1I15',
+        '1I16', '1I17', '1I18', '1I19', '1I20', '1I21', '1I22', '1I23', '1I24', '1I25', '1I26', '1I27', '1I28', '1I29',
+        '1I30', '1I31', '1I32', '1I33', '1I34', '1I35', '1I36', '1I37', '1I38', '1I39', '1I40',
+    ],
+    choices.CATEGORY_POWER_USAGE_ID: ['Pc', 'SPc', 'fSPc']
+}
+
+ELIGIBLE_METRIC_KEYS = list(chain.from_iterable([metric_keys for metric_keys in CATEGORY_METRIC_KEYS_MAP.values()]))
+ELIGIBLE_DEVICE_TYPES = cfg.get('ELIGIBLE_DEVICE_TYPES', ['1P-PowerMonitor1', '3PN-PowerMonitor1'])
 
 CORS_ORIGIN_WHITELIST = cfg.get('CORS_ORIGIN_WHITELIST', ())
 

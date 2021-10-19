@@ -9,5 +9,5 @@ logger = logging.getLogger(__name__)
 
 
 @job(settings.RQ_QUEUE_MAP.get('default'), timeout='10s')
-def ingest_processed_payload(data: dict, device_metrics: dict, **kwargs):
-    IngestProcessedPayloadService(data, device_metrics, **kwargs).ingest()
+def ingest_processed_payload(data: dict, **kwargs):
+    IngestProcessedPayloadService(data, **kwargs).ingest()
