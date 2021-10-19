@@ -12,8 +12,14 @@ class GeohashArea(models.Model):
     status = JSONField(default=dict, blank=True, null=True, help_text='Aggregated status')
     data = JSONField(default=dict, blank=True, null=True, help_text='Aggregated data for given geohash area')
 
+    def __str__(self):
+        return self.geohash
+
 
 class Metric(models.Model):
     key = models.CharField(max_length=4, primary_key=True, help_text='Metric key identifier')
 
     metadata = JSONField(default=dict, blank=True, null=True, help_text='Metric metadata')
+
+    def __str__(self):
+        return self.key

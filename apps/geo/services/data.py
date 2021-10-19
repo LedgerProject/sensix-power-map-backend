@@ -1,5 +1,3 @@
-from copy import deepcopy
-
 from apps.geo import choices
 from apps.geo.models import GeohashArea
 
@@ -56,10 +54,15 @@ class PowerQualityDataService(BaseDataService):
             })
 
         return {
+            'sid': self._get_aggregated_status_id(time_range_key),
             'HDs': harmonic_distortions,
             'metrics': {**thd_metrics_dict},
             'order': [k for k in self.thd_metric_keys if k in data.keys()]
         }
+
+    def _get_aggregated_status_id(self, time_range_key: str) -> int:
+        status = self.area.status.get(time_range_key, {})
+        return min([status_object.get('sid') for status_object in status.values()])
 
 
 class PowerUsageDataService(BaseDataService):

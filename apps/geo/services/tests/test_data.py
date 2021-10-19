@@ -22,6 +22,10 @@ class PowerQualityDataServiceTestCase(TestCase):
                     'sid': choices.STATUS_NORMAL_ID,
                     'l': 'THD I Some text'
                 },
+                '1V7': {
+                    'sid': choices.STATUS_WARNING_ID,
+                    'l': 'HD7 I Some text'
+                },
             }
         }
         data_mock = {
@@ -66,6 +70,7 @@ class PowerQualityDataServiceTestCase(TestCase):
         actual_result = instance.compute('time_key')
 
         self.assertEqual(actual_result, {
+            'sid': choices.STATUS_WARNING_ID,
             'HDs': [
                 {'x': 3, 'y1': 11.03, 'y2': 21.03},
                 {'x': 5, 'y1': 11.05, 'y2': 21.05},

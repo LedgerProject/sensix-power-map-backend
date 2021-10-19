@@ -16,6 +16,7 @@ logger = logging.getLogger(__name__)
 
 class IngestProcessedPayloadService(object):
     GEOHASH_PRECISION = 4
+    VALUE_PRECISION = 2
 
     def __init__(self, data: dict, **kwargs) -> None:
         self.device_eui = data['eui']
@@ -55,20 +56,18 @@ class IngestProcessedPayloadService(object):
     def _update_area_fields(self, area: GeohashArea) -> None:
         updated_data_map = defaultdict(dict)
         updated_status_map = defaultdict(dict)
-        updated_metadata_map = defaultdict(dict)
+        updated_metadata_map = area.metadata or {}
 
         for metric_key, value in self._get_payload_data().items():
             metric = MetricDetailCacheJob().get(key=metric_key)
 
-            updated_metadata_map['metrics'] = {**metric.metadata}
+            updated_metadata_map[metric_key] = self._get_metadata_for(metric)
 
             for opt_key, opt_val in settings.MOVING_AVERAGE_OPTIONS.items():
                 current_data = area.data.get(opt_key, {}).get(metric_key, {})
 
                 updated_data = self._compute_data_for(value, metric, opt_val, current_data)
-                updated_last_value = updated_data.get('agg', {}).get('lv')
-
-                updated_status = self._compute_status_for(updated_last_value, metric)
+                updated_status = self._compute_status_for(updated_data, metric)
 
                 updated_data_map[opt_key][metric_key] = updated_data
                 updated_status_map[opt_key][metric_key] = updated_status
@@ -89,14 +88,20 @@ class IngestProcessedPayloadService(object):
         updated_data = MovingAverageService(
             relative_time_range=opt_val.get('range'),
             window_size=opt_val.get('window'),
-            precision=2
+            precision=self.VALUE_PRECISION
         ).update(value, self.payload.get('timestamp'), current_data)
 
         return updated_data
 
-    def _compute_status_for(self, value: float, metric: Metric) -> dict:
+    def _compute_status_for(self, data: dict, metric: Metric) -> dict:
+        try:
+            value = data.get('wins', [])[-1].get('y')
+        except IndexError as e:
+            value = None
+
         thresholds = metric.metadata.get('thresholds', {})
 
+        # TODO: WTF, why is metric metadata thresholds not updated?
         return StatusService(thresholds).update(value)
 
     def _update_area_summary(self, area: GeohashArea) -> None:
@@ -108,3 +113,12 @@ class IngestProcessedPayloadService(object):
                 updated_summary_map[opt_key][category_id] = data_service_class.compute(opt_key)
 
         area.summary = updated_summary_map
+
+    def _get_metadata_for(self, metric: Metric) -> dict:
+        metadata = metric.metadata or {}
+
+        # Remove useless fields we won't need at area instance level.
+        del metadata['thresholds']
+        del metadata['description']
+
+        return metadata

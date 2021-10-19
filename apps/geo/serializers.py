@@ -7,24 +7,30 @@ from apps.geo.models import GeohashArea
 
 
 class GeohashAreaListSerializer(serializers.ModelSerializer):
-    r = serializers.SerializerMethodField()
-    summary = serializers.SerializerMethodField()
+    r = serializers.SerializerMethodField(help_text='Time range key')
+    cid = serializers.SerializerMethodField(help_text='Category Id')
+    h = serializers.CharField(source='geohash', help_text='Geohash string')
+    sid = serializers.SerializerMethodField(help_text='Status Id')
 
     _time_range_key = None
+    _category_id = None
 
     class Meta:
         model = GeohashArea
         fields = [
-            'geohash', 'summary', 'r'
+            'r', 'cid', 'h', 'sid'
         ]
 
     def get_r(self, obj):
         return self._get_time_range_key()
 
-    def get_summary(self, obj):
-        request = self.context.get('request')
-        category_id = request.query_params.get('category_id', choices.CATEGORY_POWER_QUALITY_ID)
-        return obj.status.get(category_id, {})
+    def get_cid(self, obj):
+        return self._get_category_id()
+
+    def get_sid(self, obj):
+        time_range_key = self._get_time_range_key()
+        category_id = self._get_category_id()
+        return obj.summary.get(time_range_key, {}).get(category_id, {}).get('sid', choices.STATUS_NONE_ID)
 
     def _get_time_range_key(self):
         if self._time_range_key:
@@ -42,21 +48,44 @@ class GeohashAreaListSerializer(serializers.ModelSerializer):
 
         return self._time_range_key
 
+    def _get_category_id(self):
+        if self._category_id:
+            return self._category_id
+
+        request = self.context.get('request')
+
+        self._category_id = choices.CATEGORY_POWER_QUALITY_ID
+
+        if request:
+            self._category_id = request.query_params.get('category_id', choices.CATEGORY_POWER_QUALITY_ID)
+
+        if self._category_id not in dict(choices.CATEGORY_ID_CHOICES).keys():
+            raise ValidationError(detail='Invalid category Id')
+
+        return self._category_id
+
 
 class GeohashAreaDetailSerializer(GeohashAreaListSerializer):
-    status = serializers.SerializerMethodField()
+    metadata = serializers.SerializerMethodField()
     data = serializers.SerializerMethodField()
 
     class Meta:
         model = GeohashArea
         fields = GeohashAreaListSerializer.Meta.fields + [
-            'status', 'data'
+            'data', 'metadata'
         ]
 
-    def get_status(self, obj):
-        key = self._get_time_range_key()
-        return obj.status.get(key, {})
+    def get_data(self, obj):
+        time_range_key = self._get_time_range_key()
+        category_id = self._get_category_id()
 
-    def get_data(self, obj) -> dict:
-        key = self._get_time_range_key()
-        return obj.data.get(key, {})
+        return obj.summary.get(time_range_key, {}).get(category_id, {})
+
+    def get_metadata(self, obj):
+        category_id = self._get_category_id()
+        metric_keys = settings.CATEGORY_METRIC_KEYS_MAP.get(category_id, [])
+
+        return {
+            metric_key: metadata
+            for metric_key, metadata in obj.metadata.items() if metric_key in metric_keys
+        }

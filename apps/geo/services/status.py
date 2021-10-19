@@ -1,3 +1,5 @@
+from typing import Optional
+
 from apps.geo import choices
 
 
@@ -11,10 +13,13 @@ class StatusService(object):
     def __init__(self, thresholds: dict) -> None:
         self.thresholds = thresholds
 
-    def update(self, value: float):
+    def update(self, value: Optional[float]) -> dict:
         updated_status = {
             'sid': choices.STATUS_NONE_ID,
         }
+
+        if value is None:
+            return updated_status
 
         for status_key in self.status_keys_map.keys():
             for threshold in self.thresholds.get(status_key, []):
