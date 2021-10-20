@@ -20,10 +20,10 @@ class IngestProcessedPayloadService(object):
     VALUE_PRECISION = 2
 
     def __init__(self, data: dict, **kwargs) -> None:
-        self.device_eui = data['eui']
-        self.device_type = data['type']
-        self.payload = data['payload']
-        self.user_data = data['user_data']
+        self.device_eui = data.get('eui')
+        self.device_type = data.get('type')
+        self.payload = data.get('payload', {})
+        self.user_data = data.get('user_data', {})
         self.position = self.user_data.get('position', {})
         self.latitude = self.position.get('lat')
         self.longitude = self.position.get('lon')
