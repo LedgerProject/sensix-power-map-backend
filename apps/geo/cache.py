@@ -1,4 +1,4 @@
-from apps.geo.models import Metric
+from apps.geo.models import Metric, GeohashArea
 from common.cache import BaseQuerySetCacheJob
 
 
@@ -10,3 +10,10 @@ class MetricDetailCacheJob(BaseQuerySetCacheJob):
 
     def fetch(self, *args, **kwargs):
         return super().fetch(*args, **kwargs).first()
+
+
+class GeohashAreaListCacheJob(BaseQuerySetCacheJob):
+    model = GeohashArea
+
+    lifetime = 15
+    fetch_on_stale_threshold = 15

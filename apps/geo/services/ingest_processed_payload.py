@@ -1,6 +1,7 @@
 import logging
 import time
 from collections import defaultdict
+from copy import deepcopy
 
 import geohash
 from django.conf import settings
@@ -115,7 +116,7 @@ class IngestProcessedPayloadService(object):
         area.summary = updated_summary_map
 
     def _get_metadata_for(self, metric: Metric) -> dict:
-        metadata = metric.metadata or {}
+        metadata = deepcopy(metric.metadata or {})
 
         # Remove useless fields we won't need at area instance level.
         del metadata['thresholds']
