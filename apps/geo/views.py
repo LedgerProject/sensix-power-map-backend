@@ -10,7 +10,7 @@ class GeohashAreaViewSet(GeohashAreaFields, mixins.RetrieveModelMixin, mixins.Li
     """
     GeohashArea view set.
     """
-    permission_classes = permissions.AllowAny
+    permission_classes = [permissions.AllowAny]
     serializer_class = serializers.GeohashAreaDetailSerializer
 
     def get_queryset(self):
