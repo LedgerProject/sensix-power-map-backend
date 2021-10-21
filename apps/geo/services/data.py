@@ -27,7 +27,16 @@ class PowerQualityDataService(BaseDataService):
         15: {'voltage': '1V15', 'current': '1I15'},
         17: {'voltage': '1V17', 'current': '1I17'},
         19: {'voltage': '1V19', 'current': '1I19'},
-        21: {'voltage': '1V21', 'current': '1I21'}
+        21: {'voltage': '1V21', 'current': '1I21'},
+        23: {'voltage': '1V23', 'current': '1I23'},
+        25: {'voltage': '1V25', 'current': '1I25'},
+        27: {'voltage': '1V27', 'current': '1I27'},
+        29: {'voltage': '1V29', 'current': '1I29'},
+        31: {'voltage': '1V31', 'current': '1I31'},
+        33: {'voltage': '1V33', 'current': '1I33'},
+        35: {'voltage': '1V35', 'current': '1I35'},
+        37: {'voltage': '1V37', 'current': '1I37'},
+        39: {'voltage': '1V39', 'current': '1I39'}
     }
 
     def compute(self, time_range_key: str) -> dict:
@@ -62,7 +71,13 @@ class PowerQualityDataService(BaseDataService):
 
     def _get_aggregated_status_id(self, time_range_key: str) -> int:
         status = self.area.status.get(time_range_key, {})
-        return min([status_object.get('sid') for status_object in status.values()])
+
+        try:
+            status_id = min([status_object.get('sid', choices.STATUS_NONE_ID) for status_object in status.values()])
+        except ValueError as e:
+            status_id = choices.STATUS_NONE_ID
+
+        return status_id
 
 
 class PowerUsageDataService(BaseDataService):

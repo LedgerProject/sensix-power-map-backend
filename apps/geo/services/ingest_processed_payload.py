@@ -29,6 +29,8 @@ class IngestProcessedPayloadService(object):
         self.longitude = self.position.get('lon')
         self.kwargs = kwargs
 
+        self._payload_data = None
+
     def ingest(self):
         start = time.process_time()
 
@@ -40,13 +42,17 @@ class IngestProcessedPayloadService(object):
             logger.debug(f'Missing geo coordinates for device {self.device_eui}. Abort ingestion.')
             return
 
+        if not self._has_eligible_metrics():
+            logger.debug(f'No eligible metrics in payload data for {self.device_eui}. Abort ingestion.')
+            return
+
         h = geohash.encode(self.latitude, self.longitude, self.GEOHASH_PRECISION)
         area, _ = GeohashArea.objects.get_or_create(geohash=h)
 
-        self._update_area_fields(area)
-        self._update_area_summary(area)
+        self._update_metric_specific_fields(area)
+        self._update_aggregated_fields(area)
 
-        area.save(update_fields=['summary', 'metadata', 'status', 'data'])
+        area.save(update_fields=['agg_status', 'agg_data', 'metadata', 'status', 'data'])
 
         end = time.process_time()
         logger.info(
@@ -55,7 +61,7 @@ class IngestProcessedPayloadService(object):
         )
         logger.debug(f'Payload: {self.payload}')
 
-    def _update_area_fields(self, area: GeohashArea) -> None:
+    def _update_metric_specific_fields(self, area: GeohashArea) -> None:
         updated_data_map = defaultdict(dict)
         updated_status_map = defaultdict(dict)
         updated_metadata_map = area.metadata or {}
@@ -82,9 +88,17 @@ class IngestProcessedPayloadService(object):
         return self.latitude is not None and self.longitude is not None
 
     def _get_payload_data(self) -> dict:
-        return {
+        if self._payload_data is not None:
+            return self._payload_data
+
+        self._payload_data = {
             k: v for k, v in self.payload.get('data', {}).items() if k in settings.ELIGIBLE_METRIC_KEYS
         }
+
+        return self._payload_data
+
+    def _has_eligible_metrics(self):
+        return bool(self._get_payload_data())
 
     def _compute_data_for(self, value: float, metric: Metric, opt_val: dict, current_data: dict) -> dict:
         updated_data = MovingAverageService(
@@ -103,18 +117,22 @@ class IngestProcessedPayloadService(object):
 
         thresholds = metric.metadata.get('thresholds', {})
 
-        # TODO: WTF, why is metric metadata thresholds not updated?
         return StatusService(thresholds).update(value)
 
-    def _update_area_summary(self, area: GeohashArea) -> None:
-        updated_summary_map = defaultdict(dict)
+    def _update_aggregated_fields(self, area: GeohashArea) -> None:
+        updated_agg_status = defaultdict(dict)
+        updated_agg_data = defaultdict(dict)
 
         for opt_key, opt_val in settings.MOVING_AVERAGE_OPTIONS.items():
             for category_id, metric_keys in settings.CATEGORY_METRIC_KEYS_MAP.items():
                 data_service_class = AGGREGATION_SERVICE_CLASS_MAP.get(category_id)(area)
-                updated_summary_map[opt_key][category_id] = data_service_class.compute(opt_key)
+                computed_data = data_service_class.compute(opt_key)
 
-        area.summary = updated_summary_map
+                updated_agg_data[opt_key][category_id] = computed_data
+                updated_agg_status[opt_key][category_id] = computed_data.get('sid')
+
+        area.agg_status = updated_agg_status
+        area.agg_data = updated_agg_data
 
     def _get_metadata_for(self, metric: Metric) -> dict:
         metadata = deepcopy(metric.metadata or {})

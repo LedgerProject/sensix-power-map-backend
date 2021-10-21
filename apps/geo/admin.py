@@ -32,7 +32,7 @@ class GeohashAreaAdmin(admin.ModelAdmin):
 
     def _get_status_for(self, obj, time_range_key: str) -> int:
         category_id = choices.CATEGORY_POWER_QUALITY_ID
-        return obj.summary.get(time_range_key, {}).get(category_id, {}).get('sid', choices.STATUS_NONE_ID)
+        return obj.agg_status.get(time_range_key, {}).get(category_id, choices.STATUS_NONE_ID)
 
 
 @register(Metric)
