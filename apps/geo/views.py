@@ -1,4 +1,4 @@
-from rest_framework import mixins
+from rest_framework import mixins, permissions
 from rest_framework.viewsets import GenericViewSet
 
 from apps.geo import serializers
@@ -10,6 +10,7 @@ class GeohashAreaViewSet(GeohashAreaFields, mixins.RetrieveModelMixin, mixins.Li
     """
     GeohashArea view set.
     """
+    permission_classes = permissions.AllowAny
     serializer_class = serializers.GeohashAreaDetailSerializer
 
     def get_queryset(self):
