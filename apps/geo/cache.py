@@ -32,7 +32,7 @@ class GeohashAreaListCacheJob(BaseQuerySetCacheJob):
                 output_field=IntegerField()
             )
         ).values(
-            'sid'
+            'h', 'sid'
         )
 
         return qs
