@@ -110,10 +110,7 @@ class IngestProcessedPayloadService(object):
         return updated_data
 
     def _compute_status_for(self, data: dict, metric: Metric) -> dict:
-        try:
-            value = data.get('wins', [])[-1].get('y')
-        except IndexError as e:
-            value = None
+        value = data.get('agg', {}).get('avg')
 
         thresholds = metric.metadata.get('thresholds', {})
 
