@@ -54,7 +54,7 @@ class StatusServiceTestCase(TestCase):
     def setUp(self):
         super().setUp()
 
-    def test_update_none(self):
+    def test__update_none(self):
         instance = StatusService(self.thresholds_mock)
 
         # outside of [-1, 1] threshold interval range.
@@ -62,7 +62,7 @@ class StatusServiceTestCase(TestCase):
         self.assertEqual(instance.update(2.22), {'sid': STATUS_NONE_ID})
         self.assertEqual(instance.update(-1.01), {'sid': STATUS_NONE_ID})
 
-    def test_update_nominal(self):
+    def test__update_nominal(self):
         instance = StatusService(self.thresholds_mock)
 
         # inside of (0.9, 1] | [-1, -0.9) threshold interval range.
@@ -74,7 +74,7 @@ class StatusServiceTestCase(TestCase):
         self.assertEqual(instance.update(-0.95), {'sid': STATUS_NORMAL_ID, 'l': 'Normal Text 2'})
         self.assertEqual(instance.update(-0.91), {'sid': STATUS_NORMAL_ID, 'l': 'Normal Text 2'})
 
-    def test_update_warning(self):
+    def test__update_warning(self):
         instance = StatusService(self.thresholds_mock)
 
         # inside of (0.65, 0.9] | [-0.9, 0.65) | (-0.1, 0.1) threshold interval range.
@@ -90,7 +90,7 @@ class StatusServiceTestCase(TestCase):
         self.assertEqual(instance.update(0.0), {'sid': STATUS_WARNING_ID, 'l': 'Warning Text 3'})
         self.assertEqual(instance.update(0.09), {'sid': STATUS_WARNING_ID, 'l': 'Warning Text 3'})
 
-    def test_update_critical(self):
+    def test__update_critical(self):
         instance = StatusService(self.thresholds_mock)
 
         # inside of [0.1, 0.65] | [-0.65, -0.1] threshold interval range.
@@ -101,3 +101,26 @@ class StatusServiceTestCase(TestCase):
         self.assertEqual(instance.update(-0.1), {'sid': STATUS_CRITICAL_ID, 'l': 'Critical Text 2'})
         self.assertEqual(instance.update(-0.49), {'sid': STATUS_CRITICAL_ID, 'l': 'Critical Text 2'})
         self.assertEqual(instance.update(-0.65), {'sid': STATUS_CRITICAL_ID, 'l': 'Critical Text 2'})
+
+    def test__get_agg_status(self):
+        self.assertEqual(StatusService.get_agg_status(
+            [STATUS_WARNING_ID, STATUS_CRITICAL_ID, STATUS_NORMAL_ID, STATUS_NONE_ID]
+        ), STATUS_CRITICAL_ID)
+        self.assertEqual(StatusService.get_agg_status(
+            [STATUS_CRITICAL_ID, STATUS_CRITICAL_ID, STATUS_NONE_ID]
+        ), STATUS_CRITICAL_ID)
+        self.assertEqual(StatusService.get_agg_status(
+            [STATUS_WARNING_ID, STATUS_WARNING_ID, STATUS_NORMAL_ID]
+        ), STATUS_WARNING_ID)
+        self.assertEqual(StatusService.get_agg_status(
+            [STATUS_NONE_ID, STATUS_WARNING_ID, STATUS_NORMAL_ID]
+        ), STATUS_WARNING_ID)
+        self.assertEqual(StatusService.get_agg_status(
+            [STATUS_NONE_ID, STATUS_NONE_ID, STATUS_NORMAL_ID]
+        ), STATUS_NORMAL_ID)
+        self.assertEqual(StatusService.get_agg_status(
+            [STATUS_NONE_ID, STATUS_NONE_ID]
+        ), STATUS_NONE_ID)
+        self.assertEqual(StatusService.get_agg_status(
+            []
+        ), STATUS_NONE_ID)

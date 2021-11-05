@@ -54,12 +54,16 @@ MOVING_AVERAGE_OPTIONS = {
     }
 }
 
+VALUE_PRECISION = 2
+
+THD_AGG_VOLTAGE_METRIC_KEY = 'THV'
+THD_AGG_CURRENT_METRIC_KEY = 'THI'
+
+THD_VOLTAGE_METRIC_KEYS = ['THV1', 'THV2', 'THV3']  # Voltage Total Harmonic Distortions
+THD_CURRENT_METRIC_KEYS = ['THI1', 'THI2', 'THI3']  # Current Total Harmonic Distortions
+
 CATEGORY_METRIC_KEYS_MAP = {
-    choices.CATEGORY_POWER_QUALITY_ID: [
-        # Voltage Total Harmonic Distortions
-        'THV', 'THV1', 'THV2', 'THV3',
-        # Current Total Harmonic Distortions                       
-        'THI', 'THI1', 'THI2', 'THI3',      
+    choices.CATEGORY_POWER_QUALITY_ID: THD_VOLTAGE_METRIC_KEYS + THD_CURRENT_METRIC_KEYS + [
         # L1 Odd Voltage harmonic distortions
         '1V3', '1V5', '1V7', '1V9', '1V11', '1V13', '1V15', '1V17', '1V19', '1V21', '1V23', '1V25', '1V27', '1V29',
         '1V31', '1V33', '1V35', '1V37', '1V39',

@@ -33,3 +33,16 @@ class StatusService(object):
                     return updated_status
 
         return updated_status
+
+    @staticmethod
+    def get_agg_status(status_ids: list) -> int:
+        """
+        Aggregate given status: Worst status has priority.
+        0 - Critical, 1 - Warning, 2 - Nominal, 3 - None.
+        :param status_ids status ids to aggregate.
+        :return: aggregated status.
+        """
+        try:
+            return min(status_ids)
+        except ValueError:
+            return choices.STATUS_NONE_ID

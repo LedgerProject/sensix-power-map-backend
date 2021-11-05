@@ -9,7 +9,7 @@ class MovingAverageServiceTestCase(TestCase):
     def setUp(self):
         super().setUp()
 
-    def test_update_remove_old_windows(self):
+    def test__update_remove_old_windows(self):
         value = 66.66
         timestamp = 8000
 
@@ -40,7 +40,7 @@ class MovingAverageServiceTestCase(TestCase):
 
         self.assertEqual(actual_result, expected_result)
 
-    def test_update_with_empty_data_input(self):
+    def test__update_with_empty_data_input(self):
         value = 66.66
         timestamp = 1000
 
@@ -58,7 +58,7 @@ class MovingAverageServiceTestCase(TestCase):
 
         self.assertEqual(actual_result, expected_result)
 
-    def test_update_add_new_window_to_windows(self):
+    def test__update_add_new_window_to_windows(self):
         value = 66.66
         timestamp = 6000
 
@@ -86,7 +86,7 @@ class MovingAverageServiceTestCase(TestCase):
 
         self.assertEqual(actual_result, expected_result)
 
-    def test_update_add_last_window(self):
+    def test__update_add_last_window(self):
         value = 11.22
         timestamp = 4250
 
@@ -113,7 +113,7 @@ class MovingAverageServiceTestCase(TestCase):
 
         self.assertEqual(actual_result, expected_result)
 
-    def test_update_with_precision1(self):
+    def test__update_with_precision1(self):
         value = 11.22
         timestamp = 4250
 
@@ -138,7 +138,7 @@ class MovingAverageServiceTestCase(TestCase):
 
         self.assertEqual(actual_result, expected_result)
 
-    def test_update_with_precision3(self):
+    def test__update_with_precision3(self):
         value = 11.22
         timestamp = 4250
 
@@ -165,7 +165,7 @@ class MovingAverageServiceTestCase(TestCase):
 
         self.assertEqual(actual_result, expected_result)
 
-    def test_update_window_and_agg_min(self):
+    def test__update_window_and_agg_min(self):
         value = 10.2
         timestamp = 4250
 
@@ -190,7 +190,7 @@ class MovingAverageServiceTestCase(TestCase):
 
         self.assertEqual(actual_result, expected_result)
 
-    def test_update_window_and_agg_max(self):
+    def test__update_window_and_agg_max(self):
         value = 11.6
         timestamp = 4250
 
@@ -215,7 +215,7 @@ class MovingAverageServiceTestCase(TestCase):
 
         self.assertEqual(actual_result, expected_result)
 
-    def test_update_window_min(self):
+    def test__update_window_min(self):
         value = 10.2
         timestamp = 4250
 
@@ -240,7 +240,7 @@ class MovingAverageServiceTestCase(TestCase):
 
         self.assertEqual(actual_result, expected_result)
 
-    def test_update_window_max(self):
+    def test__update_window_max(self):
         value = 11.4
         timestamp = 4250
 

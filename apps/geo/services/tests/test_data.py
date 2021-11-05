@@ -11,14 +11,14 @@ class PowerQualityDataServiceTestCase(TestCase):
     def setUp(self):
         super().setUp()
 
-    def test_compute_single_phase_systems(self):
+    def test__compute_single_phase_systems(self):
         status_mock = {
             'time_key': {
-                'THV': {
+                'THV1': {
                     'sid': choices.STATUS_WARNING_ID,
                     'l': 'THD V Some text'
                 },
-                'THI': {
+                'THI1': {
                     'sid': choices.STATUS_NORMAL_ID,
                     'l': 'THD I Some text'
                 },
@@ -30,13 +30,19 @@ class PowerQualityDataServiceTestCase(TestCase):
         }
         data_mock = {
             'time_key': {
-                'THV': {
-                    'agg': {'lv': 2.16},
-                    'wins': [{'x': 123, 'y': 5.12}, {'x': 123, 'y': 4.54}]
+                'THV1': {
+                    'agg': {'avg': 2.16},
+                    'wins': [
+                        {'x': 123, 'y': 5.12, 'cnt': 11, 'max': 11.2, 'min': 0.9},
+                        {'x': 123, 'y': 4.54, 'cnt': 11, 'max': 11.2, 'min': 0.9}
+                    ]
                 },
-                'THI': {
-                    'agg': {'lv': 8.66},
-                    'wins': [{'x': 123, 'y': 5.42}, {'x': 123, 'y': 12.12}]
+                'THI1': {
+                    'agg': {'avg': 8.66},
+                    'wins': [
+                        {'x': 123, 'y': 5.42, 'cnt': 11, 'max': 11.2, 'min': 0.9},
+                        {'x': 123, 'y': 12.12, 'cnt': 11, 'max': 11.2, 'min': 0.9}
+                    ]
                 },
                 '1V3': {'agg': {'avg': 11.03}},
                 '1V5': {'agg': {'avg': 11.05}},
@@ -108,26 +114,40 @@ class PowerQualityDataServiceTestCase(TestCase):
                 {'x': 39, 'y1': 11.39, 'y2': 21.39},
             ],
             'metrics': {
-                'THI': {'sid': 2,
+                'THI': {'sid': choices.STATUS_NORMAL_ID,
                         'value': 8.66,
-                        'values': [{'x': 123, 'y': 5.42}, {'x': 123, 'y': 12.12}]},
-                'THV': {'sid': 1,
+                        'values': [
+                            {'x': 123, 'y': 5.42, 'cnt': 11, 'max': 11.2, 'min': 0.9},
+                            {'x': 123, 'y': 12.12, 'cnt': 11, 'max': 11.2, 'min': 0.9}
+                        ]},
+                'THV': {'sid': choices.STATUS_WARNING_ID,
                         'value': 2.16,
-                        'values': [{'x': 123, 'y': 5.12}, {'x': 123, 'y': 4.54}]}
+                        'values': [
+                            {'x': 123, 'y': 5.12, 'cnt': 11, 'max': 11.2, 'min': 0.9},
+                            {'x': 123, 'y': 4.54, 'cnt': 11, 'max': 11.2, 'min': 0.9}
+                        ]}
             },
             'order': ['THV', 'THI']
         })
 
-    def test_compute_three_phase_systems(self):
+    def test__compute_three_phase_systems(self):
         status_mock = {
             'time_key': {
-                'THV': {
+                'THV1': {
                     'sid': choices.STATUS_WARNING_ID,
-                    'l': 'THD V Some text'
+                    'l': 'THD V1 Some text'
                 },
-                'THI': {
+                'THI1': {
                     'sid': choices.STATUS_NORMAL_ID,
-                    'l': 'THD I Some text'
+                    'l': 'THD I1 Some text'
+                },
+                'THV3': {
+                    'sid': choices.STATUS_NORMAL_ID,
+                    'l': 'THD V3 Some text'
+                },
+                'THI3': {
+                    'sid': choices.STATUS_CRITICAL_ID,
+                    'l': 'THD I3 Some text'
                 },
                 '1V7': {
                     'sid': choices.STATUS_WARNING_ID,
@@ -137,13 +157,59 @@ class PowerQualityDataServiceTestCase(TestCase):
         }
         data_mock = {
             'time_key': {
-                'THV': {
-                    'agg': {'lv': 2.16},
-                    'wins': [{'x': 123, 'y': 5.12}, {'x': 123, 'y': 4.54}]
+                'THV1': {
+                    'agg': {'avg': 11.26},
+                    'wins': [
+                        {'x': 101, 'y': 11.11, 'cnt': 11, 'max': 19.11, 'min': 10.01},
+                        {'x': 201, 'y': 11.21, 'cnt': 12, 'max': 19.21, 'min': 10.21},
+                        {'x': 301, 'y': 11.31, 'cnt': 13, 'max': 19.31, 'min': 10.31},
+                        {'x': 401, 'y': 11.41, 'cnt': 14, 'max': 19.41, 'min': 10.41},
+                    ]
                 },
-                'THI': {
-                    'agg': {'lv': 8.66},
-                    'wins': [{'x': 123, 'y': 5.42}, {'x': 123, 'y': 12.12}]
+                'THI1': {
+                    'agg': {'avg': 1.26},
+                    'wins': [
+                        {'x': 101, 'y': 1.11, 'cnt': 11, 'max': 9.11, 'min': 0.01},
+                        {'x': 201, 'y': 1.21, 'cnt': 12, 'max': 9.21, 'min': 0.21},
+                        {'x': 301, 'y': 1.31, 'cnt': 13, 'max': 9.31, 'min': 0.31},
+                        {'x': 401, 'y': 1.41, 'cnt': 14, 'max': 9.41, 'min': 0.41},
+                    ]
+                },
+                'THV2': {
+                    'agg': {'avg': 21.26},
+                    'wins': [
+                        {'x': 101, 'y': 21.11, 'cnt': 11, 'max': 29.11, 'min': 20.01},
+                        {'x': 201, 'y': 21.21, 'cnt': 12, 'max': 29.21, 'min': 20.21},
+                        {'x': 301, 'y': 21.31, 'cnt': 13, 'max': 29.31, 'min': 20.31},
+                        {'x': 401, 'y': 21.41, 'cnt': 14, 'max': 29.41, 'min': 20.41},
+                    ]
+                },
+                'THI2': {
+                    'agg': {'avg': 121.26},
+                    'wins': [
+                        {'x': 101, 'y': 121.11, 'cnt': 11, 'max': 129.11, 'min': 120.01},
+                        {'x': 201, 'y': 121.21, 'cnt': 12, 'max': 129.21, 'min': 120.21},
+                        {'x': 301, 'y': 121.31, 'cnt': 13, 'max': 129.31, 'min': 120.31},
+                        {'x': 401, 'y': 121.41, 'cnt': 14, 'max': 129.41, 'min': 120.41},
+                    ]
+                },
+                'THV3': {
+                    'agg': {'avg': 131.26},
+                    'wins': [
+                        {'x': 101, 'y': 131.11, 'cnt': 11, 'max': 139.11, 'min': 130.01},
+                        {'x': 201, 'y': 131.21, 'cnt': 12, 'max': 139.21, 'min': 130.21},
+                        {'x': 301, 'y': 131.31, 'cnt': 13, 'max': 139.31, 'min': 130.31},
+                        {'x': 401, 'y': 131.41, 'cnt': 14, 'max': 139.41, 'min': 130.41},
+                    ]
+                },
+                'THI3': {
+                    'agg': {'avg': 31.26},
+                    'wins': [
+                        {'x': 101, 'y': 31.11, 'cnt': 11, 'max': 39.11, 'min': 30.01},
+                        {'x': 201, 'y': 31.21, 'cnt': 12, 'max': 39.21, 'min': 30.21},
+                        {'x': 301, 'y': 31.31, 'cnt': 13, 'max': 39.31, 'min': 30.31},
+                        {'x': 401, 'y': 31.41, 'cnt': 14, 'max': 39.41, 'min': 30.41},
+                    ]
                 },
                 '1V3': {'agg': {'avg': 11.03}}, '2V3': {'agg': {'avg': 111.03}}, '3V3': {'agg': {'avg': 311.03}},
                 '1V5': {'agg': {'avg': 11.05}}, '2V5': {'agg': {'avg': 111.05}}, '3V5': {'agg': {'avg': 311.05}},
@@ -192,7 +258,7 @@ class PowerQualityDataServiceTestCase(TestCase):
         actual_result = instance.compute('time_key')
 
         self.assertEqual(actual_result, {
-            'sid': choices.STATUS_WARNING_ID,
+            'sid': choices.STATUS_CRITICAL_ID,
             'HDs': [
                 {'x': 3, 'y1': 144.36, 'y2': 154.36},
                 {'x': 5, 'y1': 144.38, 'y2': 154.38},
@@ -215,12 +281,63 @@ class PowerQualityDataServiceTestCase(TestCase):
                 {'x': 39, 'y1': 144.72, 'y2': 154.72}
             ],
             'metrics': {
-                'THI': {'sid': 2,
-                        'value': 8.66,
-                        'values': [{'x': 123, 'y': 5.42}, {'x': 123, 'y': 12.12}]},
-                'THV': {'sid': 1,
-                        'value': 2.16,
-                        'values': [{'x': 123, 'y': 5.12}, {'x': 123, 'y': 4.54}]}
+                'THI': {'sid': choices.STATUS_CRITICAL_ID,
+                        'value': 51.26,
+                        'values': [
+                            {'x': 101, 'y': 51.11, 'cnt': 11, 'max': 129.11, 'min': 0.01},
+                            {'x': 201, 'y': 51.21, 'cnt': 12, 'max': 129.21, 'min': 0.21},
+                            {'x': 301, 'y': 51.31, 'cnt': 13, 'max': 129.31, 'min': 0.31},
+                            {'x': 401, 'y': 51.41, 'cnt': 14, 'max': 129.41, 'min': 0.41}
+                        ]},
+                'THV': {'sid': choices.STATUS_WARNING_ID,
+                        'value': 54.59,
+                        'values': [
+                            {'x': 101, 'y': 54.44, 'cnt': 11, 'max': 139.11, 'min': 10.01},
+                            {'x': 201, 'y': 54.54, 'cnt': 12, 'max': 139.21, 'min': 10.21},
+                            {'x': 301, 'y': 54.64, 'cnt': 13, 'max': 139.31, 'min': 10.31},
+                            {'x': 401, 'y': 54.74, 'cnt': 14, 'max': 139.41, 'min': 10.41}
+                        ]}
             },
             'order': ['THV', 'THI']
         })
+
+    def test__get_agg_values_for(self):
+        data_mock = {
+            'time_key': {
+                'key1': {
+                    'wins': [
+                        {'x': 101, 'y': 12.11, 'cnt': 12, 'max': 12.11, 'min': 11.11},
+                        {'x': 201, 'y': 12.22, 'cnt': 10, 'max': 12.22, 'min': 11.22},
+                        {'x': 301, 'y': 12.33, 'cnt': 9, 'max': 12.33, 'min': 11.33},
+                        {'x': 401, 'y': 12.44, 'cnt': 6, 'max': 12.44, 'min': 11.44},
+                        {'x': 501, 'y': 12.55, 'cnt': 3, 'max': 12.55, 'min': 11.55},
+                    ]
+                },
+                'key2': {
+                    'wins': [
+                        {'x': 302, 'y': 22.33, 'cnt': 11, 'max': 22.33, 'min': 21.33},
+                        {'x': 402, 'y': 22.44, 'cnt': 1, 'max': 22.44, 'min': 21.44},
+                        {'x': 502, 'y': 22.55, 'cnt': 4, 'max': 22.55, 'min': 21.55},
+                    ]
+                },
+                'key3': {
+                    'wins': [
+                        {'x': 503, 'y': 32.55, 'cnt': 12, 'max': 32.55, 'min': 31.55},
+                    ]
+                },
+                'key4': {}
+            }
+        }
+
+        area_mock = mock.Mock(data=data_mock)
+        instance = PowerQualityDataService(area_mock)
+
+        actual_result = instance._get_agg_values_for('time_key', ['key3', 'key2', 'key1', 'key4'])
+
+        self.assertEqual(actual_result, [
+            {'x': 101, 'y': 12.11, 'cnt': 12, 'max': 12.11, 'min': 11.11},
+            {'x': 201, 'y': 12.22, 'cnt': 10, 'max': 12.22, 'min': 11.22},
+            {'x': 302, 'y': 17.33, 'cnt': 11, 'max': 22.33, 'min': 11.33},
+            {'x': 402, 'y': 17.44, 'cnt': 6, 'max': 22.44, 'min': 11.44},
+            {'x': 503, 'y': 22.55, 'cnt': 12, 'max': 32.55, 'min': 11.55},
+        ])

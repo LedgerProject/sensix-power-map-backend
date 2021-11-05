@@ -17,7 +17,6 @@ logger = logging.getLogger(__name__)
 
 class IngestProcessedPayloadService(object):
     GEOHASH_PRECISION = 4
-    VALUE_PRECISION = 2
 
     def __init__(self, data: dict, **kwargs) -> None:
         self.device_eui = data.get('eui')
@@ -104,7 +103,7 @@ class IngestProcessedPayloadService(object):
         updated_data = MovingAverageService(
             relative_time_range=opt_val.get('range'),
             window_size=opt_val.get('window'),
-            precision=self.VALUE_PRECISION
+            precision=settings.VALUE_PRECISION
         ).update(value, self.payload.get('timestamp'), current_data)
 
         return updated_data

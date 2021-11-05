@@ -1,8 +1,12 @@
+import itertools
 import logging
 from typing import Optional
 
+from django.conf import settings
+
 from apps.geo import choices
 from apps.geo.models import GeohashArea
+from apps.geo.services.status import StatusService
 
 logger = logging.getLogger(__name__)
 
@@ -20,63 +24,76 @@ class PowerQualityDataService(BaseDataService):
     """
     Power quality data service, computes harmonic distortions from moving average area data.
     """
-    VALUE_PRECISION = 2
+    composite_metric_keys = settings.CATEGORY_METRIC_KEYS_MAP[choices.CATEGORY_POWER_QUALITY_ID]
 
-    thd_metric_keys = ['THV', 'THI']
-
-    hd_metrics_map = {
-        3: {'voltage': ['1V3', '2V3', '3V3'], 'current': ['1I3', '2I3', '3I3']},
-        5: {'voltage': ['1V5', '2V5', '3V5'], 'current': ['1I5', '2I5', '3I5']},
-        7: {'voltage': ['1V7', '2V7', '3V7'], 'current': ['1I7', '2I7', '3I7']},
-        9: {'voltage': ['1V9', '2V9', '3V9'], 'current': ['1I9', '2I9', '3I9']},
-        11: {'voltage': ['1V11', '2V11', '3V11'], 'current': ['1I11', '2I11', '3I11']},
-        13: {'voltage': ['1V13', '2V13', '3V13'], 'current': ['1I13', '2I13', '3I13']},
-        15: {'voltage': ['1V15', '2V15', '3V15'], 'current': ['1I15', '2I15', '3I15']},
-        17: {'voltage': ['1V17', '2V17', '3V17'], 'current': ['1I17', '2I17', '3I17']},
-        19: {'voltage': ['1V19', '2V19', '3V19'], 'current': ['1I19', '2I19', '3I19']},
-        21: {'voltage': ['1V21', '2V21', '3V21'], 'current': ['1I21', '2I21', '3I21']},
-        23: {'voltage': ['1V23', '2V23', '3V23'], 'current': ['1I23', '2I23', '3I23']},
-        25: {'voltage': ['1V25', '2V25', '3V25'], 'current': ['1I25', '2I25', '3I25']},
-        27: {'voltage': ['1V27', '2V27', '3V27'], 'current': ['1I27', '2I27', '3I27']},
-        29: {'voltage': ['1V29', '2V29', '3V29'], 'current': ['1I29', '2I29', '3I29']},
-        31: {'voltage': ['1V31', '2V31', '3V31'], 'current': ['1I31', '2I31', '3I31']},
-        33: {'voltage': ['1V33', '2V33', '3V33'], 'current': ['1I33', '2I33', '3I33']},
-        35: {'voltage': ['1V35', '2V35', '3V35'], 'current': ['1I35', '2I35', '3I35']},
-        37: {'voltage': ['1V37', '2V37', '3V37'], 'current': ['1I37', '2I37', '3I37']},
-        39: {'voltage': ['1V39', '2V39', '3V39'], 'current': ['1I39', '2I39', '3I39']}
+    hd_metric_keys_map = {
+        3: [['1V3', '2V3', '3V3'], ['1I3', '2I3', '3I3']],
+        5: [['1V5', '2V5', '3V5'], ['1I5', '2I5', '3I5']],
+        7: [['1V7', '2V7', '3V7'], ['1I7', '2I7', '3I7']],
+        9: [['1V9', '2V9', '3V9'], ['1I9', '2I9', '3I9']],
+        11: [['1V11', '2V11', '3V11'], ['1I11', '2I11', '3I11']],
+        13: [['1V13', '2V13', '3V13'], ['1I13', '2I13', '3I13']],
+        15: [['1V15', '2V15', '3V15'], ['1I15', '2I15', '3I15']],
+        17: [['1V17', '2V17', '3V17'], ['1I17', '2I17', '3I17']],
+        19: [['1V19', '2V19', '3V19'], ['1I19', '2I19', '3I19']],
+        21: [['1V21', '2V21', '3V21'], ['1I21', '2I21', '3I21']],
+        23: [['1V23', '2V23', '3V23'], ['1I23', '2I23', '3I23']],
+        25: [['1V25', '2V25', '3V25'], ['1I25', '2I25', '3I25']],
+        27: [['1V27', '2V27', '3V27'], ['1I27', '2I27', '3I27']],
+        29: [['1V29', '2V29', '3V29'], ['1I29', '2I29', '3I29']],
+        31: [['1V31', '2V31', '3V31'], ['1I31', '2I31', '3I31']],
+        33: [['1V33', '2V33', '3V33'], ['1I33', '2I33', '3I33']],
+        35: [['1V35', '2V35', '3V35'], ['1I35', '2I35', '3I35']],
+        37: [['1V37', '2V37', '3V37'], ['1I37', '2I37', '3I37']],
+        39: [['1V39', '2V39', '3V39'], ['1I39', '2I39', '3I39']]
     }
 
     def compute(self, time_range_key: str) -> dict:
-        status = self.area.status.get(time_range_key, {})
-        data = self.area.data.get(time_range_key, {})
-
         thd_metrics_dict = {
-            metric_key: {
-                'sid': status.get(metric_key, {}).get('sid', choices.STATUS_NONE_ID),
-                'value': data.get(metric_key, {}).get('agg', {}).get('lv'),
-                'values': data.get(metric_key, {}).get('wins', []),
-            } for metric_key in self.thd_metric_keys
+            settings.THD_AGG_VOLTAGE_METRIC_KEY: self._get_thd_metric_dict_for(
+                time_range_key, settings.THD_VOLTAGE_METRIC_KEYS
+            ),
+            settings.THD_AGG_CURRENT_METRIC_KEY: self._get_thd_metric_dict_for(
+                time_range_key, settings.THD_CURRENT_METRIC_KEYS
+            )
         }
 
         harmonic_distortions = []
-        for key, value in self.hd_metrics_map.items():
-            avg_voltage_metric_value = self._get_average_agg_value_for(data, value.get('voltage'))
-            avg_current_metric_value = self._get_average_agg_value_for(data, value.get('current'))
+        for order, hd_metric_keys in self.hd_metric_keys_map.items():
+            voltage_metric_keys = hd_metric_keys[0]
+            current_metric_keys = hd_metric_keys[1]
+
+            avg_voltage_metric_value = self._get_agg_value_for(time_range_key, voltage_metric_keys)
+            avg_current_metric_value = self._get_agg_value_for(time_range_key, current_metric_keys)
 
             harmonic_distortions.append({
-                'x': key,
+                'x': order,
                 'y1': avg_voltage_metric_value,
                 'y2': avg_current_metric_value,
             })
 
         return {
-            'sid': self._get_aggregated_status_id(time_range_key),
+            'sid': self._get_agg_sid(time_range_key, self.composite_metric_keys),
             'HDs': harmonic_distortions,
             'metrics': {**thd_metrics_dict},
-            'order': [k for k in self.thd_metric_keys if k in data.keys()]
+            'order': [settings.THD_AGG_VOLTAGE_METRIC_KEY, settings.THD_AGG_CURRENT_METRIC_KEY]
         }
 
-    def _get_average_agg_value_for(self, data: dict, metric_keys: list) -> Optional[float]:
+    def _get_thd_metric_dict_for(self, time_range_key: str, metric_keys: list) -> dict:
+        return {
+            'sid': self._get_agg_sid(time_range_key, metric_keys),
+            'value': self._get_agg_value_for(time_range_key, metric_keys),
+            'values': self._get_agg_values_for(time_range_key, metric_keys)
+        }
+
+    def _get_agg_sid(self, time_range_key: str, metric_keys: list) -> int:
+        status = self.area.status.get(time_range_key, {})
+        status_ids = [status.get(k, {}).get('sid', choices.STATUS_NONE_ID) for k in metric_keys]
+
+        return StatusService.get_agg_status(status_ids)
+
+    def _get_agg_value_for(self, time_range_key: str, metric_keys: list) -> Optional[float]:
+        data = self.area.data.get(time_range_key, {})
         avg = 0.0
         cnt = 0
 
@@ -88,20 +105,39 @@ class PowerQualityDataService(BaseDataService):
                 cnt += 1
 
         try:
-            return round(avg / cnt, self.VALUE_PRECISION)
+            return round(avg / cnt, settings.VALUE_PRECISION)
         except ZeroDivisionError:
             logger.warning(f'ZeroDivisionError while computing average agg of metric keys {metric_keys}')
             return None
 
-    def _get_aggregated_status_id(self, time_range_key: str) -> int:
-        status = self.area.status.get(time_range_key, {})
+    def _get_agg_values_for(self, time_range_key: str, metric_keys: list) -> list:
+        """
+        Aggregate `wins` by index, considering latest timestamp of a group.
+        :return: moving average windows aka `wins` as list of dicts.
+        """
+        data = self.area.data.get(time_range_key, {})
+        wins_length = max([len(data.get(k, {}).get('wins', [])) for k in metric_keys])
 
-        try:
-            status_id = min([status_object.get('sid', choices.STATUS_NONE_ID) for status_object in status.values()])
-        except ValueError as e:
-            status_id = choices.STATUS_NONE_ID
+        values = []
+        for index in range(-wins_length, 0):
+            start = index
+            end = index + 1 or None
 
-        return status_id
+            wins_for_index = [data.get(k, {}).get('wins', [])[start:end] for k in metric_keys]
+            wins_for_index = list(itertools.chain.from_iterable(wins_for_index))
+
+            if not wins_for_index:
+                continue
+
+            values.append({
+                'x': max([w.get('x') for w in wins_for_index]),
+                'y': round(sum([w.get('y') for w in wins_for_index]) / len(wins_for_index), settings.VALUE_PRECISION),
+                'cnt': max([w.get('cnt') for w in wins_for_index]),
+                'max': max([w.get('max') for w in wins_for_index]),
+                'min': min([w.get('min') for w in wins_for_index]),
+            })
+
+        return values
 
 
 class PowerUsageDataService(BaseDataService):
