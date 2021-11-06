@@ -1,5 +1,6 @@
 import itertools
 import logging
+from collections import OrderedDict
 from typing import Optional
 
 from django.conf import settings
@@ -49,15 +50,18 @@ class PowerQualityDataService(BaseDataService):
     }
 
     def compute(self, time_range_key: str) -> dict:
-        thd_metrics_dict = {
-            settings.THD_AGG_VOLTAGE_METRIC_KEY: self._get_thd_metric_dict_for(
-                time_range_key, settings.THD_VOLTAGE_METRIC_KEYS
-            ),
-            settings.THD_AGG_CURRENT_METRIC_KEY: self._get_thd_metric_dict_for(
-                time_range_key, settings.THD_CURRENT_METRIC_KEYS
-            )
+        return {
+            'sid': self._get_agg_sid(time_range_key, self.composite_metric_keys),
+            'labels': self._get_labels_for(time_range_key),
+            'HDs': self._get_harmonic_distortions_list_for(time_range_key),
+            'metrics': self._get_thd_metrics_dict_for(time_range_key),
+            'order': [
+                settings.THD_AGG_VOLTAGE_METRIC_KEY,
+                settings.THD_AGG_CURRENT_METRIC_KEY
+            ],
         }
 
+    def _get_harmonic_distortions_list_for(self, time_range_key: str) -> list:
         harmonic_distortions = []
         for order, hd_metric_keys in self.hd_metric_keys_map.items():
             voltage_metric_keys = hd_metric_keys[0]
@@ -71,12 +75,16 @@ class PowerQualityDataService(BaseDataService):
                 'y1': avg_voltage_metric_value,
                 'y2': avg_current_metric_value,
             })
+        return harmonic_distortions
 
+    def _get_thd_metrics_dict_for(self, time_range_key: str) -> dict:
         return {
-            'sid': self._get_agg_sid(time_range_key, self.composite_metric_keys),
-            'HDs': harmonic_distortions,
-            'metrics': {**thd_metrics_dict},
-            'order': [settings.THD_AGG_VOLTAGE_METRIC_KEY, settings.THD_AGG_CURRENT_METRIC_KEY]
+            settings.THD_AGG_VOLTAGE_METRIC_KEY: self._get_thd_metric_dict_for(
+                time_range_key, settings.THD_VOLTAGE_METRIC_KEYS
+            ),
+            settings.THD_AGG_CURRENT_METRIC_KEY: self._get_thd_metric_dict_for(
+                time_range_key, settings.THD_CURRENT_METRIC_KEYS
+            )
         }
 
     def _get_thd_metric_dict_for(self, time_range_key: str, metric_keys: list) -> dict:
@@ -138,6 +146,23 @@ class PowerQualityDataService(BaseDataService):
             })
 
         return values
+
+    def _get_labels_for(self, time_range_key: str) -> list:
+        status = self.area.status.get(time_range_key, {})
+
+        desired_states = [choices.STATUS_CRITICAL_ID, choices.STATUS_WARNING_ID]
+
+        labels = [
+            status.get(k, {})
+            for k in self.composite_metric_keys
+            if status.get(k, {}).get('l')
+        ]
+
+        labels.sort(key=lambda o: o.get('sid'))
+
+        return list(OrderedDict.fromkeys([
+            o.get('l') for o in labels if o.get('sid') in desired_states
+        ]))
 
 
 class PowerUsageDataService(BaseDataService):

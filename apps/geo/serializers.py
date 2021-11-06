@@ -22,13 +22,14 @@ class GeohashAreaListSerializer(serializers.ModelSerializer):
 class GeohashAreaDetailSerializer(GeohashAreaListSerializer):
     metadata = serializers.SerializerMethodField()
     data = serializers.SerializerMethodField()
+    text = serializers.SerializerMethodField()
 
     _category_id = None
 
     class Meta:
         model = GeohashArea
         fields = GeohashAreaListSerializer.Meta.fields + [
-            'data', 'metadata'
+            'data', 'metadata', 'text'
         ]
 
     def get_data(self, obj) -> dict:
@@ -38,6 +39,11 @@ class GeohashAreaDetailSerializer(GeohashAreaListSerializer):
         category_id = self._get_category_id()
 
         return settings.CATEGORY_METRIC_METADATA_MAP.get(category_id, {})
+
+    def get_text(self, obj) -> str:
+        category_id = self._get_category_id()
+
+        return settings.CATEGORY_METRIC_TEXT_MAP.get(category_id, {}).get(obj.sid, '')
 
     def _get_category_id(self) -> str:
         if self._category_id:

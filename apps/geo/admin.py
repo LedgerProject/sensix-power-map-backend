@@ -14,6 +14,10 @@ class GeohashAreaAdmin(admin.ModelAdmin):
         'geohash',
     ]
 
+    search_fields = [
+        'geohash',
+    ]
+
     formfield_overrides = {
         JSONField: {'widget': JSONEditorWidget()},
     }

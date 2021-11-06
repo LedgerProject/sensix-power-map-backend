@@ -109,5 +109,14 @@ CATEGORY_METRIC_METADATA_MAP = {
     }
 }
 
+CATEGORY_METRIC_TEXT_MAP = {
+    choices.CATEGORY_POWER_QUALITY_ID: {
+        choices.STATUS_CRITICAL_ID: 'TBD Critical',
+        choices.STATUS_WARNING_ID: 'TBD: Warning',
+        choices.STATUS_NORMAL_ID: 'TBD: Normal',
+        choices.STATUS_NONE_ID: "Unfortunately we don't have enough data for this location"
+    },
+}
+
 ELIGIBLE_METRIC_KEYS = list(chain.from_iterable([metric_keys for metric_keys in CATEGORY_METRIC_KEYS_MAP.values()]))
 ELIGIBLE_DEVICE_TYPES = cfg.get('ELIGIBLE_DEVICE_TYPES', ['1P-PowerMonitor1', '3PN-PowerMonitor1'])
