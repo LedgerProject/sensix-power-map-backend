@@ -13,10 +13,6 @@ class GeohashArea(models.Model):
         help_text='Aggregated data for each time range and each category',
         default=dict, blank=True, null=True
     )
-    metadata = JSONField(
-        help_text='Metadata for each metric',
-        default=dict, blank=True, null=True
-    )
     status = JSONField(
         help_text='Status for each time range and each metric',
         default=dict, blank=True, null=True
@@ -36,4 +32,5 @@ class Metric(models.Model):
     metadata = JSONField(default=dict, blank=True, null=True, help_text='Metric metadata')
 
     def __str__(self):
-        return self.key
+        name = self.metadata.get('name', '')
+        return f'{self.key} - {name}'

@@ -36,28 +36,8 @@ class GeohashAreaDetailSerializer(GeohashAreaListSerializer):
 
     def get_metadata(self, obj) -> dict:
         category_id = self._get_category_id()
-        metric_keys = settings.CATEGORY_METRIC_KEYS_MAP.get(category_id, [])
 
-        metadata = {
-            metric_key: metadata
-            for metric_key, metadata in obj.metadata.items()
-            if metric_key in metric_keys if metric_key not in settings.THD_METRIC_KEYS
-        }
-
-        metadata.update({
-            settings.THD_AGG_VOLTAGE_METRIC_KEY: {
-                **obj.metadata.get(settings.THD_VOLTAGE_METRIC_KEYS[0], {}),
-                'name': 'Voltage THD',
-                'short_name': 'THD V'
-            },
-            settings.THD_AGG_CURRENT_METRIC_KEY: {
-                **obj.metadata.get(settings.THD_CURRENT_METRIC_KEYS[0], {}),
-                'name': 'Current THD',
-                'short_name': 'THD I'
-            }
-        })
-
-        return metadata
+        return settings.CATEGORY_METRIC_METADATA_MAP.get(category_id, {})
 
     def _get_category_id(self) -> str:
         if self._category_id:

@@ -64,4 +64,4 @@ class GeohashAreaAdmin(admin.ModelAdmin):
 @register(Metric)
 class MetricAdmin(admin.ModelAdmin):
     pass
-    search_fields = ['key']
+    search_fields = ['key', 'metadata__name']

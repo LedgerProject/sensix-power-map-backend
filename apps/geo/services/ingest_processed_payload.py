@@ -1,7 +1,6 @@
 import logging
 import time
 from collections import defaultdict
-from copy import deepcopy
 
 import geohash
 from django.conf import settings
@@ -51,7 +50,7 @@ class IngestProcessedPayloadService(object):
         self._update_metric_specific_fields(area)
         self._update_aggregated_fields(area)
 
-        area.save(update_fields=['agg_status', 'agg_data', 'metadata', 'status', 'data'])
+        area.save(update_fields=['agg_status', 'agg_data', 'status', 'data'])
 
         end = time.process_time()
         logger.info(
@@ -63,12 +62,9 @@ class IngestProcessedPayloadService(object):
     def _update_metric_specific_fields(self, area: GeohashArea) -> None:
         updated_data_map = defaultdict(dict)
         updated_status_map = defaultdict(dict)
-        updated_metadata_map = area.metadata or {}
 
         for metric_key, value in self._get_payload_data().items():
             metric = MetricDetailCacheJob().get(key=metric_key)
-
-            updated_metadata_map[metric_key] = self._get_metadata_for(metric)
 
             for opt_key, opt_val in settings.MOVING_AVERAGE_OPTIONS.items():
                 current_data = area.data.get(opt_key, {}).get(metric_key, {})
@@ -79,7 +75,6 @@ class IngestProcessedPayloadService(object):
                 updated_data_map[opt_key][metric_key] = updated_data
                 updated_status_map[opt_key][metric_key] = updated_status
 
-        area.metadata = updated_metadata_map
         area.data = updated_data_map
         area.status = updated_status_map
 
@@ -129,12 +124,3 @@ class IngestProcessedPayloadService(object):
 
         area.agg_status = updated_agg_status
         area.agg_data = updated_agg_data
-
-    def _get_metadata_for(self, metric: Metric) -> dict:
-        metadata = deepcopy(metric.metadata or {})
-
-        # Remove useless fields we won't need at area instance level.
-        del metadata['thresholds']
-        del metadata['description']
-
-        return metadata
