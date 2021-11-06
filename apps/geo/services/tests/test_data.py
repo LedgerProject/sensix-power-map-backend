@@ -113,6 +113,7 @@ class PowerQualityDataServiceTestCase(TestCase):
                 {'x': 37, 'y1': 11.37, 'y2': 21.37},
                 {'x': 39, 'y1': 11.39, 'y2': 21.39},
             ],
+            'labels': ['THD V Some text', 'HD7 I Some text'],
             'metrics': {
                 'THI': {'sid': choices.STATUS_NORMAL_ID,
                         'value': 8.66,
@@ -280,6 +281,7 @@ class PowerQualityDataServiceTestCase(TestCase):
                 {'x': 37, 'y1': 144.7, 'y2': 154.7},
                 {'x': 39, 'y1': 144.72, 'y2': 154.72}
             ],
+            'labels': ['THD I3 Some text', 'THD V1 Some text', 'HD7 I Some text'],
             'metrics': {
                 'THI': {'sid': choices.STATUS_CRITICAL_ID,
                         'value': 51.26,
