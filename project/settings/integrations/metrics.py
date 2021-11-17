@@ -111,9 +111,9 @@ CATEGORY_METRIC_METADATA_MAP = {
 
 CATEGORY_METRIC_TEXT_MAP = {
     choices.CATEGORY_POWER_QUALITY_ID: {
-        choices.STATUS_CRITICAL_ID: 'TBD Critical',
-        choices.STATUS_WARNING_ID: 'TBD: Warning',
-        choices.STATUS_NORMAL_ID: 'TBD: Normal',
+        choices.STATUS_CRITICAL_ID: "The Total Harmonic Distortion limits are severely crossed. Even short periods of time in this operational regime can lead to major operational problems like short-circuits in the power distribution grid or in the internal winding of electrical machines as an effect of overloading the circuit with high frequency currents. Immediate action is recommended, such as installing an Active Harmonic Filter device.",
+        choices.STATUS_WARNING_ID: "The Total Harmonic Distortion is slightly larger than the recommended values. If ignored, this can lead to particular issues in the long-term functionality of the energy boundary, such as overheating of electrical machines winding due to higher frequency currents that can lead to a premature ageing of the equipment.",
+        choices.STATUS_NORMAL_ID: "All Power Quality Indices are in the recommended threshold.  There's no impact on the Energy Performance or on the Operational Performance of the energy boundary.",
         choices.STATUS_NONE_ID: "Unfortunately we don't have enough data for this location"
     },
 }
