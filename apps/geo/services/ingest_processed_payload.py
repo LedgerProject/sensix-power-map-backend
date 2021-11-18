@@ -44,7 +44,7 @@ class IngestProcessedPayloadService(object):
             logger.debug(f'No eligible metrics in payload data for {self.device_eui}. Abort ingestion.')
             return
 
-        h = geohash.encode(self.latitude, self.longitude, self.GEOHASH_PRECISION)
+        h = geohash.encode(float(self.latitude), float(self.longitude), self.GEOHASH_PRECISION)
         area, _ = GeohashArea.objects.get_or_create(geohash=h)
 
         self._update_metric_specific_fields(area)
