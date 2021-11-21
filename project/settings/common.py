@@ -16,7 +16,12 @@ ALLOWED_HOSTS = cfg.get('ALLOWED_HOSTS', ['*'])
 ENV_ID = cfg.get('ENV_ID', 'dev')
 PROD_ENV_IDS = ['prod', 'staging']
 
-DATABASES = cfg.get('DATABASES')
+DATABASES = cfg.get('DATABASES', {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+    }
+})
 
 CACHES = cfg.get('CACHES', {})
 
